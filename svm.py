@@ -1,5 +1,8 @@
 import numpy as np
 import csv
+from sklearn import cross_validation
+from sklearn import preprocessing
+from sklearn import svm
 
 # Load all training inputs to a python list
 train_inputs = []
@@ -21,4 +24,6 @@ with open('train_outputs.csv', 'rb') as csvfile:
         train_output_no_id =  int(train_output[1])
         train_outputs.append(train_output_no_id)
 
-print "Finished succesfully!"
+clf = svm.SVC()
+scores = cross_validation.cross_val_score(clf, train_inputs, train_outputs, cv=5,n_jobs=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
