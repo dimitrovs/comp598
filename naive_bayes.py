@@ -2,7 +2,7 @@ import numpy as np
 import csv
 from sklearn import cross_validation
 from sklearn import preprocessing
-from sklearn import svm
+from sklearn.naive_bayes import GaussianNB
 
 # Load all training inputs to a python list
 train_inputs = []
@@ -36,12 +36,12 @@ with open('test_inputs.csv', 'rb') as csvfile:
         test_inputs.append(test_input_no_id)
 
 
-clf = svm.SVC()
+clf = GaussianNB()
 clf.fit(train_inputs, train_outputs)
 test_outputs = clf.predict(test_inputs)
 
 # Write a random output for every test_input
-test_output_file = open('test_output_svm.csv', "wb")
+test_output_file = open('test_output_nb.csv', "wb")
 writer = csv.writer(test_output_file, delimiter=',')
 writer.writerow(['Id', 'Prediction']) # write header
 for idx, test_output in enumerate(test_outputs):
