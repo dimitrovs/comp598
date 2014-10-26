@@ -2,6 +2,10 @@
 
 ##Data
 
+The training set consists of 50 000 labelled examples.
+
+The test set consists of 20 000 unlabelled examples, whose category must be predicted.
+
 The dataset is based on the classic MNIST dataset, with each image modified using the following transformations:
 - Embossing of the digt.
 - Rotation (by a random angle, sampled from [0, 360deg].
