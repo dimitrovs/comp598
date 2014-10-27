@@ -1,3 +1,4 @@
 *.csv
+*.pyc
 # Ignore raw data .csv files
 data/raw/*.csv
