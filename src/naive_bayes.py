@@ -136,6 +136,8 @@ class GaussianNaiveBayesClassifier(object):
 				# Gaussian distribution
 				cond_prob = calc_gaussian(u, sig_sq, x)
 
+				# Occasionally produces a overflow RuntimeWarning in
+				# double_scalars
 				class_scores[class_name] *= np.float64(cond_prob)
 
 		# Predicted class is the class yielding the maximum likelhiood
