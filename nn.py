@@ -26,7 +26,7 @@ def get_data(file1, file2, train_num = 50000, test_num = 0):
             if index < train_num:
                 train_inputs.append(np.array(pixels))
             elif index < train_num + test_num:
-                test_inputs.append(item for sublist in pixels for item in sublist)
+                test_inputs.append(np.array(pixels))
             else:
                 break
             index += 1
@@ -80,24 +80,25 @@ class Network:
         train_set = zip(train_inputs, train_outputs)
         n = len(train_set)
         k = batch_size
-        for _ in range(epochs):
+        for j in range(epochs):
             random.shuffle(train_set)
             for i in range(n/k):
-                batch = train_set[i*k, (i+1)*k]
-                gradient_w = [W.fill(0) for W in self.weights]
-                gradient_b = [B.fill(0) for B in self.biases]
+                batch = train_set[i*k: (i+1)*k]
+                gradient_w = [np.zeros(np.shape(W)) for W in self.weights]
+                gradient_b = [np.zeros(np.shape(B)) for B in self.biases]
                 for x,y in batch:
                     delta_w, delta_b = self.backprop(x,y)
                     gradient_w = [a+b for a,b in zip(gradient_w, delta_w)]
                     gradient_b = [a+b for a,b in zip(gradient_b, delta_b)]
                 self.weights = [a - (eta/k) * b for a,b in zip(self.weights, gradient_w)]
                 self.biases = [a - (eta/k) * b for a,b in zip(self.biases, gradient_b)]
+            print "epoch {} done.".format(j+1)        
 
 
     def backprop(self, pixels, result):
         zs, activations = self.feedforward(pixels)
-        delta_w = [W.fill(0) for W in self.weights]
-        delta_b = [B.fill(0) for B in self.biases]
+        delta_w = [np.zeros(np.shape(W)) for W in self.weights]
+        delta_b = [np.zeros(np.shape(B)) for B in self.biases]
         change = activations[-1]
         change[result - 1, 0] -= 1
         # '*' is the hadamard product when multiplying numpy arrays
@@ -106,7 +107,8 @@ class Network:
         delta_b[-1] = delta
         for i in range(2, self.num_layers):
             z = zs[-i]
-            delta = self.weights[i-1].transpose().dot(delta) * vector_sigmoid_prime(z)
+            delta = self.weights[-i+1].transpose().dot(delta) * \
+                    vector_sigmoid_prime(z)
             delta_w[-i] = np.dot(delta, activations[-i-1].transpose())
             delta_b[-i] = delta
         return delta_w,delta_b
@@ -116,10 +118,11 @@ class Network:
         total = 0
         for x,y in zip(test_input, test_output):
             for w, b in zip(self.weights, self.biases):
-                a = vector_sigmoid(np.dot(w, a) + b)
-            if y == np.argmax(a):
+                x = vector_sigmoid(np.dot(w, x) + b)
+            if y == np.argmax(x):
                 total += 1
-        print str(total) + "correct predictions out of" + str(len(test_input)) + "total"
+        print str(total) + " correct prediction(s) out of " + \
+              str(len(test_input)) + " total"
                 
                     
                 
@@ -153,15 +156,19 @@ def vector_sigmoid_prime(vector):
 
 
 ######## MAIN #########
-"""
+
 train_inputs, train_outputs, test_inputs, test_outputs = \
               get_data("./data_and_scripts/train_inputs.csv", \
-                       "./data_and_scripts/train_outputs.csv", 10)
+                       "./data_and_scripts/train_outputs.csv", 40000, 10000)
 
-net = Network([2304,50,10])
+net = Network([2304,30,10])
+#print net.weights
+net.SGD(train_inputs, train_outputs, 30, 10, 3.0)
+#print net.weights
+net.test(test_inputs, test_outputs)
 
 
-"""
+
 
 #### get_data, feedforward, backprop and constructor are working
 #### and have been tested
