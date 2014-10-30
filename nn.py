@@ -2,6 +2,19 @@ import csv
 import numpy as np
 import math
 import random
+from sklearn import cross_validation
+
+"neural network parameters"
+#number of cells in hidden layer
+hid_layer = 70
+#size of training_set and test_size (totalling at most 50 000)
+train_size = 50000
+test_size = 0
+"Stochastic gradient parameters"
+#number of epochs, size of SGD batch, and eta
+epoch = 30
+batch = 10
+eta = 0.1
 
 def get_data(file1, file2, train_num = 50000, test_num = 0):
     """ get_data takes the file containing the training inputs and the
@@ -76,7 +89,8 @@ class Network:
             activations.append(activation)
         return zs, activations
 
-    def SGD(self, train_inputs, train_outputs, epochs, batch_size, eta):
+    def SGD(self, train_inputs, train_outputs, epochs, batch_size, eta,
+            test_input = None, test_output = None):
         train_set = zip(train_inputs, train_outputs)
         n = len(train_set)
         k = batch_size
@@ -92,7 +106,11 @@ class Network:
                     gradient_b = [a+b for a,b in zip(gradient_b, delta_b)]
                 self.weights = [a - (eta/k) * b for a,b in zip(self.weights, gradient_w)]
                 self.biases = [a - (eta/k) * b for a,b in zip(self.biases, gradient_b)]
-            print "epoch {} done.".format(j+1)        
+            if test_input:
+                print "Epoch {}: {} / {}".format(
+                    j, self.test(test_input, test_output), len(test_input))
+            else:
+                print "epoch {} done.".format(j+1)        
 
 
     def backprop(self, pixels, result):
@@ -121,8 +139,7 @@ class Network:
                 x = vector_sigmoid(np.dot(w, x) + b)
             if y == np.argmax(x):
                 total += 1
-        print str(total) + " correct prediction(s) out of " + \
-              str(len(test_input)) + " total"
+        return total
                 
                     
                 
@@ -159,13 +176,16 @@ def vector_sigmoid_prime(vector):
 
 train_inputs, train_outputs, test_inputs, test_outputs = \
               get_data("./data_and_scripts/train_inputs.csv", \
-                       "./data_and_scripts/train_outputs.csv", 40000, 10000)
+                       "./data_and_scripts/train_outputs.csv", 50000)
 
-net = Network([2304,30,10])
-#print net.weights
-net.SGD(train_inputs, train_outputs, 30, 10, 3.0)
-#print net.weights
-net.test(test_inputs, test_outputs)
+X_train, X_test, y_train, y_test = cross_validation.train_test_split( \
+    train_inputs, train_outputs, test_size=0.2, random_state=0)
+
+net = Network([2304,hid_layer,10])
+
+net.SGD(X_train, y_train, epoch, batch, eta, X_test, y_test)
+
+
 
 
 
